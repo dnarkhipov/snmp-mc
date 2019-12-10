@@ -1,15 +1,27 @@
 """
 http://snmplabs.com/pysnmp/examples/v3arch/asyncio/agent/cmdrsp/snmp-versions.html#multiple-snmp-usm-users
 
-$ snmpwalk -v3 -u usr-md5-des -l authPriv -A authkey1 -X privkey1 localhost:1161 .1.3.6
-$ snmpwalk -v3 -u usr-sha-none -l authNoPriv -a SHA -A authkey1 localhost:1161 .1.3.6
+$ s$ snmpwalk -v3 -u usr-sha-none -l authNoPriv -a SHA -A authkey1 localhost:1161 .1.3.6nmpwalk -v3 -u usr-md5-des -l authPriv -A authkey1 -X privkey1 localhost:1161 .1.3.6
+
 $ snmpwalk -v3 -u usr-sha-aes128 -l authPriv -a SHA -A authkey1 -x AES -X privkey1 localhost:1161 .1.3.6
 """
+import logging
+import logging.handlers
 
 from pysnmp.entity import engine, config
 from pysnmp.entity.rfc3413 import cmdrsp, context
 from pysnmp.carrier.asyncio.dgram import udp
 import asyncio
+
+# from pysnmp import debug
+
+
+# Debug PySNMP library
+# dblh = logging.handlers.WatchedFileHandler('./.tmp/snmp-debug.log')
+# dblh.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s'))
+# logging.getLogger('pysnmp').addHandler(dblh)
+# debug.setLogger(debug.Debug('all'))
+
 
 # Get the event loop for this thread
 loop = asyncio.get_event_loop()

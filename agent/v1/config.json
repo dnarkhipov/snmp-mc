@@ -1,0 +1,6 @@
+{
+  "log-file": ".tmp/agent.log",
+  "log-level": "debug",
+  "db-url": "nms:nms@127.0.0.1/nms",
+  "snmp-bind": "127.0.0.1:1161"
+}
