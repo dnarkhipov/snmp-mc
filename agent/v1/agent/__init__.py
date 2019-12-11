@@ -1,18 +1,19 @@
-__all__ = ['main', 'SNMPResponder']
+__all__ = ['main', 'SnmpResponder']
 
 import logging
 import logging.handlers
 import sys
+import os
 from pathlib import Path
 
-from .responder import SNMPResponder
+from .responder import SnmpResponder
 from .config import (
     read_settings
 )
 from .version import ABOUT
 
 
-AGENT_ID = '52303b6d-1462-4468-918e-2c1b90af7871'
+AGENT_ID = os.getpid()
 LOGGER_TAG = 'core'
 
 def start_agent():
@@ -64,7 +65,8 @@ def start_agent():
     settings.logger = logger
 
     logger.info(f'[{LOGGER_TAG}] Starting {ABOUT} ...')
-    with SNMPResponder(settings, None) as srv:
+    logger.debug(f'[{LOGGER_TAG}] Agent ID: {AGENT_ID}')
+    with SnmpResponder(settings, None) as srv:
         srv.run()
 
 

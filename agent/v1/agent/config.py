@@ -106,6 +106,31 @@ def read_settings(override_args=None):
         default='127.0.0.1:4161',
         help='Listen for SNMP packets at this network address, default 127.0.0.1:4161'
     )
+    # http://snmplabs.com/snmpresponder/configuration/snmpresponderd.html#snmp-usm-auth-protocol
+    grp_api.add_argument(
+        '--snmp-auth-protocol',
+        choices=['NONE', 'MD5', 'SHA', 'SHA224', 'SHA256', 'SHA384', 'SHA512'],
+        default='SHA',
+        dest='snmp_auth_protocol',
+        type=lambda s: s.upper(),
+        help="SNMPv3 message authentication protocol to use. Valid values are: 'NONE', 'MD5', 'SHA', 'SHA224', 'SHA256', 'SHA384', 'SHA512'."
+    )
+    # http://snmplabs.com/snmpresponder/configuration/snmpresponderd.html#snmp-usm-priv-protocol
+    grp_api.add_argument(
+        '--snmp-priv-protocol',
+        choices=['NONE', 'DES', 'AES', 'AES192', 'AES256', 'AES192BLMT', 'AES256BLMT', '3DES'],
+        default='AES',
+        dest='snmp_priv_protocol',
+        type=lambda s: s.upper(),
+        help="SNMPv3 message encryption protocol to use. Valid values are: 'NONE', 'DES', 'AES', 'AES192', 'AES256', 'AES192BLMT', 'AES256BLMT', '3DES'."
+    )
+    grp_api.add_argument(
+        '--snmp-user',
+        default=list(),
+        action='append',
+        dest='snmp_user',
+        help='SNMPv3 user. Template: "user-name:auth-key:encryption-key"'
+    )
     # endregion
 
     if override_args is not None:
@@ -118,7 +143,12 @@ def read_settings(override_args=None):
         if cfg_file.exists():
             try:
                 with cfg_file.open() as json_file:
-                    cfg = [f"--{key}={value}" for (key, value) in json.load(json_file).items()]
+                    cfg = list()
+                    for (key, value) in json.load(json_file).items():
+                        if type(value) == list:
+                            cfg.extend([f"--{key}={list_value}" for list_value in value])
+                        else:
+                            cfg.append(f"--{key}={value}")
             except Exception as e:
                 parser.error(f"Can't load json configuration file {cfg_file}: {e}")
         elif any('--config' in p for p in cmd_line_args):
