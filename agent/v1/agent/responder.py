@@ -5,7 +5,7 @@ from argparse import Namespace
 from pysnmp.carrier.asyncio.dgram import udp
 from pysnmp.entity import engine as snmp_engine, config as snmp_cfg
 from pysnmp.entity.rfc3413 import cmdrsp, context
-
+from pysnmp.proto.rfc1905 import GetRequestPDU, GetNextRequestPDU, GetBulkRequestPDU, SetRequestPDU
 
 SnmpSecurityLevel = {0: "noAuthNoPriv", 1:"authNoPriv", 2:"authPriv"}
 SnmpAuthProtocol = {
@@ -104,6 +104,8 @@ class SnmpResponder(object):
         # Get default SNMP context this SNMP engine serves
         self.snmpContext = context.SnmpContext(self._snmpEngine)
 
+        self._snmpEngine.observer.registerObserver(self._requestObserver, 'rfc3412.receiveMessage:request')
+
         # Register SNMP Applications at the SNMP engine for particular SNMP context
         cmdrsp.GetCommandResponder(self._snmpEngine, self.snmpContext)
         cmdrsp.SetCommandResponder(self._snmpEngine, self.snmpContext)
@@ -122,4 +124,29 @@ class SnmpResponder(object):
         finally:
             self._loop.close()
 
+    def _requestObserver(self, snmpEngine, execpoint, variables, cbCtx):
+        if execpoint == 'rfc3412.receiveMessage:request':
+            name = variables.get("securityName", None)
+            address = variables.get("transportAddress", None)
+            domain = variables.get("transportDomain", None)
+            pdu = variables.get("pdu", None)
+            log_func = self._logger.debug if name and address and domain and pdu else self._logger.warning
+            if name is None: name = "Unknown name"
+            address = f"{address[0]}:{address[1]}" if address else "Unknown address"
+            domain = f"{domain}" if domain else "Unknown domain"
+            if pdu:
+                pdu_type = type(pdu)
+                if pdu_type == GetRequestPDU:
+                    pdu = "get-request"
+                elif pdu_type == GetNextRequestPDU:
+                    pdu = 'get-next-request'
+                elif pdu_type == GetBulkRequestPDU:
+                    pdu = 'get-bulk-request'
+                elif pdu_type == SetRequestPDU:
+                    pdu = 'set-request'
+                else:
+                    pdu = "unknown request"
 
+            log_func(f'[{LOGGER_TAG}] Handle {pdu} from {name}@{address} <{domain}>')
+        else:
+            self._logger.warning(f'[{LOGGER_TAG}] Unhandled execution point: {execpoint}')
