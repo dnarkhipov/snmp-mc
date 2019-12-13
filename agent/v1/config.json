@@ -4,5 +4,5 @@
   "console-log-level": "debug",
   "db-url": "nms:nms@127.0.0.1/nms",
   "snmp-bind": "127.0.0.1:1161",
-  "snmp-user": ["usr-sha-aes128:authkey1:privkey1", "usr-sha-none:authkey1", "user1"]
+  "snmp-user": ["usr-sha-aes128:authkey1:privkey1", "usr-sha-none:authkey1", "user2"]
 }
