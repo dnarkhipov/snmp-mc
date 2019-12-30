@@ -1,0 +1,26 @@
+AGENTS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    enterprises, MODULE-IDENTITY, OBJECT-IDENTITY
+        FROM SNMPv2-SMI;
+
+agents MODULE-IDENTITY
+    LAST-UPDATED "201912200000Z"
+    ORGANIZATION "Undefined"
+    CONTACT-INFO "e-mail: diman.dba@gmail.com"
+    DESCRIPTION "Sample SNMP agents"
+
+    REVISION "201912200000Z"
+    DESCRIPTION
+        "Version 0.1"
+
+    ::= { spacemc 1 }
+
+spacemc OBJECT IDENTIFIER ::= { enterprises 314159 }
+
+agent1  OBJECT-IDENTITY
+    STATUS current
+    DESCRIPTION "SNMP agent #1"
+    ::= { agents 1 }
+
+END

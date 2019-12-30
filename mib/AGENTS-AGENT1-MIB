@@ -1,0 +1,142 @@
+AGENTS-AGENT1-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    agent1
+        FROM AGENTS-MIB
+    MODULE-IDENTITY, OBJECT-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+    DateAndTime
+        FROM SNMPv2-TC;
+
+ 
+agentMC MODULE-IDENTITY
+    LAST-UPDATED "201912200000Z"
+    ORGANIZATION "Undefined"
+    CONTACT-INFO "e-mail: diman.dba@gmail.com"
+    DESCRIPTION "Sample SNMP agent #1"
+
+    REVISION
+        "201912200000Z"
+    DESCRIPTION
+        "Version 0.1"
+
+    ::= { agent1 1 }
+
+agentNotificationGroups OBJECT-IDENTITY
+    STATUS current
+    DESCRIPTION "Группы уведомлений о событиях"
+    ::= { agent1 101 }
+
+--
+-- Уведомления, отправляемые агентом
+--
+agentNotifications OBJECT-IDENTITY
+    STATUS current
+    DESCRIPTION "Уведомления о событиях"
+    ::= { agentMC 1 }
+
+--
+-- Кэш данных ТМИ
+--
+agentTmCache OBJECT-IDENTITY
+    STATUS current
+    DESCRIPTION "Кэш данных ТМИ"
+    ::= { agentMC 2 }
+
+tmCacheTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF tmCacheEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Таблица кэшируемых данных ТМИ"
+    ::= { agentTmCache 1 }
+
+tmCacheEntry OBJECT-TYPE
+    SYNTAX tmCacheEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Строка данных в кэше ТМИ"
+    INDEX { tmCacheEntryTimestamp }
+    ::= { tmCacheTable 1 }
+
+tmCacheEntry ::= SEQUENCE {
+    tmCacheEntryTimestamp  DateAndTime, -- время добавления записи в кэш
+    tmCachedData OCTET STRING (SIZE (1..255)) -- кэшируемые данные
+}
+
+-- уведомления о внутренних событиях управления/контроля
+mcNotificationsGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { nfStart, nfShutdown, nfRestart }
+    STATUS current
+    DESCRIPTION "Уведомления о внутренних событиях управления/контроля."
+    ::= { agentNotificationGroups 1 }
+
+-- уведомления о событиях на канале управления
+linkNotificationsGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { nfLinkUp, nfLinkDown }
+    STATUS current
+    DESCRIPTION "Уведомления о событиях на канале управления."
+    ::= { agentNotificationGroups 2 }
+
+-- уведомления о событиях поступления/обработки ТМИ
+tmNotificationsGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { nfTmAviable }
+    STATUS  current
+    DESCRIPTION
+    "Уведомления о событиях поступления/обработки ТМИ."
+    ::= { agentNotificationGroups 3 }
+
+--
+-- Основные параметры контроля и управления работой агента
+--
+shutdown OBJECT-TYPE
+    SYNTAX INTEGER {
+        stop(0),        -- остановить работу
+        restart(1)      -- выполнить рестарт
+    }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION "Рестарт или выключение агента"
+    ::= { agentMC 10 }
+
+--
+--  Уведомления о внутренних событиях управления/контроля
+--
+nfStart NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION "Уведомление: агент запущен."
+    ::= { agentNotifications 101 }
+    
+nfShutdown NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "Уведомление: агент находится в процессе выключения."
+    ::= { agentNotifications 102 }
+
+nfRestart NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION "Уведомление: агент был перезапущен."
+    ::= { agentNotifications 103 }
+
+--
+-- Уведомления о событиях на канале управления
+--
+nfLinkUp NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION "Уведомление: канал управления доступен."
+    ::= { agentNotifications 201 }
+
+nfLinkDown NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION "Уведомление: канал управления недоступен."
+    ::= { agentNotifications 202 }
+
+--
+-- Уведомления о событиях поступления/обработки ТМИ
+--
+nfTmAviable NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION "Уведомление: доступны новые данные ТМИ."
+    ::= { agentNotifications 301 }
+
+END
